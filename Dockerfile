@@ -35,7 +35,7 @@ RUN php artisan config:cache && \
     php artisan route:cache
 
 # Expose the HTTP port
-EXPOSE 80
+EXPOSE 8080
 
 # Start Apache in foreground
 CMD ["apache2-foreground"]

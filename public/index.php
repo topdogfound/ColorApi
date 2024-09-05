@@ -1,5 +1,7 @@
 <?php
 
+die("We Are Live Kuch to chal rha hn ");
+
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Http\Request;
 
