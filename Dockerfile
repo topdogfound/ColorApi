@@ -33,7 +33,7 @@ RUN php /var/www/html/artisan config:cache && \
     php /var/www/html/artisan route:cache
 
 # Use Apache to serve the application
-CMD ["apache2-foreground"]
+CMD ["php", "artisan", "serve"]
 
 # Optional: Add a health check
 HEALTHCHECK CMD curl --fail http://localhost:80 || exit 1
