@@ -24,4 +24,4 @@ RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cac
 RUN php artisan config:cache && \
     php artisan route:cache
 
-CMD ["apache2-foreground"]
+CMD ["php", "artisan", "serve"]
