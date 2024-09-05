@@ -1,7 +1,10 @@
-FROM composer:2.0 as build
-COPY . /app/
-RUN composer install --prefer-dist --no-dev --optimize-autoloader --no-interaction --ignore-platform-reqs
+# Build stage
+FROM composer:latest as build
+WORKDIR /app
+COPY . .
+RUN composer install --prefer-dist --no-dev --optimize-autoloader --no-interaction --ignore-platform-reqs -vvv
 
+# Production stage
 FROM php:8.1-apache-buster as production
 RUN echo "ServerName 127.0.0.1" >> /etc/apache2/apache2.conf
 
@@ -13,9 +16,12 @@ RUN docker-php-ext-configure opcache --enable-opcache && \
 
 COPY --from=build /app /var/www/html
 
-RUN php artisan config:cache && \
-    php artisan route:cache && \
-    chmod 777 -R /var/www/html/storage/ && \
-    chown -R www-data:www-data /var/www/
+# Set proper permissions
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache && \
+    chmod -R 755 /var/www/html/storage /var/www/html/bootstrap/cache
 
-CMD ["php", "artisan", "serve", "--host=0.0.0.0"]
+# Cache configuration and routes
+RUN php artisan config:cache && \
+    php artisan route:cache
+
+CMD ["apache2-foreground"]
