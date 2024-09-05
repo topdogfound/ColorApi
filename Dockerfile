@@ -7,10 +7,10 @@ RUN composer install --prefer-dist --no-dev --optimize-autoloader --no-interacti
 # Production stage
 FROM php:8.1-apache-buster as production
 
-# Render expects the service to listen on port 8080
+# Ensure Apache listens on port 8080 (Render requirement)
 EXPOSE 8080
 
-# Ensure Apache listens on port 8080 (Render requirement)
+# Modify Apache to listen on port 8080
 RUN sed -i 's/80/8080/g' /etc/apache2/ports.conf /etc/apache2/sites-available/000-default.conf
 
 # Set Apache server name
@@ -25,16 +25,19 @@ ENV APP_URL=http://localhost:8080
 RUN docker-php-ext-configure opcache --enable-opcache && \
     docker-php-ext-install pdo pdo_mysql
 
-# Copy application from the build stage
+# Copy the application from the build stage
 COPY --from=build /app /var/www/html
 
+# Copy the Laravel public directory to the Apache root
+COPY --from=build /app/public /var/www/html
+
 # Set proper permissions
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache && \
-    chmod -R 755 /var/www/html/storage /var/www/html/bootstrap/cache
+RUN chown -R www-data:www-data /var/www/html && \
+    chmod -R 755 /var/www/html
 
 # Cache Laravel configuration and routes
 RUN php /var/www/html/artisan config:cache && \
     php /var/www/html/artisan route:cache
 
-# Start Apache in the foreground
+# Restart Apache in the foreground
 CMD ["apache2-foreground"]
